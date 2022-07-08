@@ -11,6 +11,16 @@ function anError(error, showHTML) {
 }
 
 var viewer;
+function saveViewerState(event){
+    // https://stackoverflow.com/a/41542008/263310
+    var searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("autoRotate", 0);
+    searchParams.set("pitch", Math.floor(event.pitch));
+    searchParams.set("yaw", Math.floor(event.yaw));
+    searchParams.set("hfov", Math.floor(event.hfov));
+    var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+    history.replaceState(null, '', newRelativePathQuery);
+}
 function parseURLParameters() {
     var URL;
     if (window.location.hash.length > 0) {
@@ -87,6 +97,7 @@ function parseURLParameters() {
             // Create viewer
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
+            viewer.on('animatefinished', saveViewerState);
         };
         request.open('GET', configFromURL.config);
         request.send();
@@ -101,6 +112,7 @@ function parseURLParameters() {
     configFromURL.escapeHTML = true;
     configFromURL.targetBlank = true;
     viewer = pannellum.viewer('container', configFromURL);
+    viewer.on('animatefinished', saveViewerState);
 }
 
 // Display error if opened from local file
