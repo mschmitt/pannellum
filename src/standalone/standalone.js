@@ -11,13 +11,21 @@ function anError(error, showHTML) {
 }
 
 var viewer;
-function saveViewerState(event){
+function animationDone(event){
+    saveViewerState('animationDone', Math.floor(event.pitch), Math.floor(event.yaw), Math.floor(event.hfov));
+}
+function interactionDone(event){
+    saveViewerState('interactionDone', Math.floor(event.view.viewer.getPitch()), Math.floor(event.view.viewer.getYaw()), Math.floor(event.view.viewer.getHfov()));
+}
+
+function saveViewerState(caller, pitch, yaw, hfov){
+    // console.log("%s, pitch=%s, yaw=%s, hfov=%s", caller, pitch, yaw, hfov);
     // https://stackoverflow.com/a/41542008/263310
     var searchParams = new URLSearchParams(window.location.search);
     searchParams.set("autoRotate", 0);
-    searchParams.set("pitch", Math.floor(event.pitch));
-    searchParams.set("yaw", Math.floor(event.yaw));
-    searchParams.set("hfov", Math.floor(event.hfov));
+    searchParams.set("pitch", pitch);
+    searchParams.set("yaw", yaw);
+    searchParams.set("hfov", hfov);
     var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
     history.replaceState(null, '', newRelativePathQuery);
 }
@@ -97,7 +105,9 @@ function parseURLParameters() {
             // Create viewer
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
-            viewer.on('animatefinished', saveViewerState);
+            viewer.on('animatefinished', animationDone);
+            viewer.on('mouseup', interactionDone);
+            viewer.on('touchup', interactionDone);
         };
         request.open('GET', configFromURL.config);
         request.send();
@@ -112,7 +122,9 @@ function parseURLParameters() {
     configFromURL.escapeHTML = true;
     configFromURL.targetBlank = true;
     viewer = pannellum.viewer('container', configFromURL);
-    viewer.on('animatefinished', saveViewerState);
+    viewer.on('animatefinished', animationDone);
+    viewer.on('mouseup', interactionDone);
+    viewer.on('touchup', interactionDone);
 }
 
 // Display error if opened from local file
